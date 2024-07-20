@@ -1,0 +1,98 @@
+---
+title: "Forest Plot for Stroke Outcome"
+author: "Jaskaran Dhiman"
+date: "2024-07-19"
+output: html_document
+---
+
+# Introduction
+
+In this lab, you will learn how to create a forest plot in R. The plot will show the beta estimates for the relationship between diabetes and stroke outcome, adjusted for age, smoking, alcohol, and cholesterol levels.
+
+# Setting Up the Environment
+
+First, we need to load the necessary libraries and the dataset.
+
+```{r}
+# install.packages("forestplot")
+```
+
+```{r load-libraries}
+# Load necessary libraries
+library(tidyverse)
+library(forestplot)
+library(broom)
+```
+
+# Overview of the Dataset
+
+We will use a synthetic health dataset that contains information about age, smoking, alcohol consumption, cholesterol levels, diabetes status, and stroke outcome.
+
+```{r load-data}
+# Load the dataset
+data <- read.csv("health_data.csv")
+head(data)
+summary(data)
+```
+
+The health dataset is a synthetic dataset generated to study the relationship between diabetes and stroke outcomes, adjusted for age, smoking, alcohol consumption, and cholesterol levels. 
+
+Column Descriptions:
+Age: The age of the individual (in years).
+Smoking: Smoking status (0 = non-smoker, 1 = smoker).
+Alcohol: Alcohol consumption status (0 = non-drinker, 1 = drinker).
+Cholesterol: Cholesterol level (in mg/dL).
+Diabetes: Diabetes status (0 = non-diabetic, 1 = diabetic).
+Stroke: Stroke outcome, a continuous variable representing the likelihood of stroke occurrence.
+
+
+# Performing Linear Regression
+
+Let's perform a linear regression to assess the relationship between diabetes and stroke outcome, adjusted for age, smoking, alcohol, and cholesterol levels.
+
+```{r regression}
+# Perform linear regression
+model <- lm(Stroke ~ Diabetes + Age + Smoking + Alcohol + Cholesterol, data = data)
+summary(model)
+```
+
+# Creating the Forest Plot
+
+We will now create a forest plot to visualize the beta estimates from the regression model.
+
+```{r forest-plot}
+
+# Extract coefficients and confidence intervals
+coefs <- tidy(model)
+coefs <- coefs %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    lower = estimate - 1.96 * std.error,
+    upper = estimate + 1.96 * std.error
+  )
+
+
+```
+
+```{r}
+# Create the forest plot
+forestplot(
+  labeltext = cbind(coefs$term, round(coefs$estimate, 2), round(coefs$lower, 2), round(coefs$upper, 2)),
+  mean = coefs$estimate,
+  lower = coefs$lower,
+  upper = coefs$upper,
+  title = "Forest Plot of Beta Estimates for Stroke Outcome",
+  xlab = "Beta Estimate"
+)
+```
+
+# Conclusion
+
+In this exercise, we covered: - How to perform linear regression in R. - How to create a forest plot to visualize the beta estimates from a regression model.
+
+For further reading, consider exploring more advanced topics like logistic regression and mixed-effects models.
+
+# Additional Resources
+
+-   [R Documentation](https://www.rdocumentation.org/)
+-   [forestplot Documentation](https://cran.r-project.org/web/packages/forestplot/forestplot.pdf)
